@@ -1,0 +1,81 @@
+// ass0.c
+#define _CRT_SECURE_NO_WARNINGS
+
+#define _CRTDBG_MAP_ALLOC	// need this to get the line identification
+//_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF|_CRTDBG_LEAK_CHECK_DF); // in main, after local declarations
+//NB must be in debug build
+
+#include <crtdbg.h>
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
+
+typedef enum{FALSE = 0, TRUE} BOOL;
+
+struct Frame{
+	char* fileName;
+	struct Frame* pNext;
+};
+
+struct Animation{
+	struct Frame* frames;
+};
+
+// Forward declarations
+void initAnimation(struct Animation*);
+void insertFrame(struct Animation*);
+void deleteFrames(struct Animation*);
+void runFrames(struct Animation*);
+
+int main(void)
+{
+	char response;
+	BOOL RUNNING = TRUE;
+	struct Animation A;
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+	initAnimation(&A);
+
+	while (RUNNING)
+	{
+		printf(	"MENU\n 1. Insert a Frame\n 2. Delete all the Frames\n 3. Run the Animation\n 4. Quit\n");
+		scanf("%c", &response);
+		switch (response)
+		{
+		case '1':insertFrame(&A);break;
+		case '2':deleteFrames(&A);break;
+		case '3':runFrames(&A);break;
+		case '4':RUNNING = FALSE;deleteFrames(&A);break;
+		default:printf("Please enter a valid option\n");
+		}
+		printf("\n");
+		while ((response = getchar()) != '\n' && response != EOF);// clear input buffer
+	}
+	return 0;
+}
+
+void runFrames(struct Animation* pA)
+{
+	int counter = 0;
+	time_t startsec, oldsec, newsec;
+	struct Frame* iterator = pA->frames;
+
+	if (pA->frames == 0)
+	{
+		printf("No frames in the animation\n");
+		return;
+	}
+
+	printf("Run the Animation\n");
+	startsec = oldsec = time(NULL);
+	while (iterator)
+	{
+		newsec = time(NULL);
+		if (newsec > oldsec)
+		{
+			printf("Frame #%d, time = %d sec\n", counter++, newsec-startsec );
+			printf("Image file name = %s\n",iterator->fileName);
+			iterator = iterator->pNext;
+			oldsec = newsec;
+		}
+	}
+}
